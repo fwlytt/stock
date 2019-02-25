@@ -1,0 +1,223 @@
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-row layui-col-space15">
+                <!--<div class="layui-col-md3">-->
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">
+                            <div class="layui-card-header"><h2 style="float: left">账单详情</h2>
+                            </div>
+                        </div>
+                        <div class="layui-card-body">
+                            <table id="stockList" lay-filter="stockList"></table>
+                            <div id="laypage"></div>
+                        </div>
+
+                        <!--订单修改-->
+                        <div style="display: none; padding: 15px" id="stockUpdate">
+                            <form class="layui-form layui-form-pane" lay-filter="u_orderInfo" id="u_orderInfo">
+                                <input type="hidden" id="u_id">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">日期</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="orderDate" lay-verify="repeat"
+                                               class="layui-input test-item">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">订单类型</label>
+                                    <div class="layui-input-block">
+                                        <select name="type" lay-verify="repeat">
+                                            <option value=""></option>
+                                            <option value="发货">发货</option>
+                                            <option value="退货">退货</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">公斤</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="num" lay-verify="decimal" autocomplete="off" class="layui-input">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">单价</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="price" lay-verify="decimal" autocomplete="off"  class="layui-input">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item layui-form-text">
+                                    <label class="layui-form-label">备注</label>
+                                    <div class="layui-input-block">
+                                        <textarea name="remarks" class="layui-textarea"></textarea>
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="doUpdate">保存</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--</div>-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="toolbarStock">
+    <a class="layui-btn layui-btn-xs" lay-event="insert" style="margin: 0"
+       href="#/customer/info_bill">
+        <i class="layui-icon" style="margin: 0">&#xe603;</i>
+    </a>
+</script>
+
+<script th:inline="none">
+    layui.config({
+        base: '/src/js/'
+    }).use(['jquery', 'layer', 'table','form','laydate'], function () {
+        var $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table,
+            form = layui.form,
+            laydate = layui.laydate;
+
+        if (!fieldId) { //页面刷新后导致变量消失
+            window.location.href="/home#/customer/list";
+        }
+
+        //年月日选择器
+        lay('.test-item').each(function() {
+            laydate.render({
+                elem: this
+                , type: 'date'
+            });
+        });
+
+        // if (fieldName) {
+        //     $(".layui-card-header").html('<h2>' + fieldName + '的加工坊</h2>');
+        // }
+
+        //列表实例
+        table.render({
+            elem: '#stockList',
+            toolbar: '#toolbarStock',
+            method: 'post',
+            where:{"map":fieldParam},
+            limit: 20,
+            height: 'full-160',
+            url: '../../orderInfo/getList', //数据接口
+            contentType: 'application/json',
+            page: true, //开启分页
+            id: "stockList2",
+            autoSort: false, //禁用前端排序
+            cellMinWidth: 120,
+            totalRow:true,
+            cols: [
+                [ //表头
+                    {field: 'orderDate',  title: '日期', sort:true}
+                    ,{field: 'type',  title: '订单类型', sort:true}
+                    ,{field: 'customerName',  title: '客户'}
+                    ,{field: 'workshopName',  title: '加工坊'}
+                    ,{field: 'stockName',  title: '型号'}
+                    ,{field: 'num',  title: '公斤', sort:true}
+                    ,{field: 'price',  title: '单价', sort:true}
+                    ,{field: 'totalPrice',  title: '总额', sort:true, totalRow:true}
+                    ,{field: 'remarks',  title: '备注', minWidth: 200}
+                ]
+            ]
+        });
+
+        //监听排序事件
+        table.on('sort(stockList)', function(obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            table.reload('stockList2', {
+                initSort: obj //记录初始排序，如果不设的话，将无法标记表头的排序状态。
+                , where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    field: obj.field //排序字段
+                    , order: obj.type //排序方式
+                }
+            });
+        });
+
+        //监听行单击事件（单击事件为：rowDouble）
+        table.on('row(stockList)', function(obj){
+            var data = obj.data;
+            $("#u_id").val(data.id);
+
+            // 弹出框赋值
+            form.val("u_orderInfo",{
+                "orderDate":data.orderDate
+                ,"type":data.type
+                ,"num":data.num
+                ,"price":data.price
+                ,"remarks":data.remarks
+            });
+
+            // 跳出弹出框
+            layer.open({
+                type : 1,
+                title : '订单修改',
+                area: '300px',
+                closeBtn : 1,
+                shade : 0,
+                moveType: 1,
+                // offset : '50px',
+                // shadeClose : false,
+                content : $('#stockUpdate'),
+                cancel:function () {
+                    $("#u_id").val('');
+                    if (obj) {
+                        obj.tr.removeClass('layui-table-click');
+                    }
+                }
+            });
+            //标注选中样式
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+        });
+
+        //表单验证
+        form.verify({
+            decimal:function(value) {
+                //框架中的数字验证需要必填，我只需要选填
+                if (value) {
+                    var regPos = /^\d+(\.\d+)?$/;
+                    if (!regPos.test(value)) {
+                        return '只能填写数字';
+                    }
+                }
+            }
+        });
+
+        //修改订单
+        form.on('submit(doUpdate)', function(data){
+            var u_id = $("#u_id").val();
+            var dataParam = data.field;
+            dataParam["id"] = u_id;
+            $.ajax({
+                type: "post",
+                url: "/orderInfo/update",
+                contentType: "application/json",
+                data: JSON.stringify(dataParam),
+                dataType: "json",
+                cache: false,
+                success: function (data) {
+                    if (data.code === '0') {
+                        layer.msg("修改成功", {time: 1000},function () {
+                            $("#u_id").val('');
+                            layer.closeAll();
+                            table.reload("stockList2");
+                        });
+                    } else {
+                        layer.msg(data.msg, {time: 1000});
+                    }
+                },
+                error: function () {
+                    layer.msg("系统错误，请联系管理员", {time: 1000})
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+
+</script>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stock.dao.CommonMapper">
+
+    <select id="getStockList" resultType="com.stock.domain.base.SelectVal">
+        SELECT id, name
+        FROM stock
+        where status = '1'
+    </select>
+
+    <select id="getCustomerList" resultType="com.stock.domain.base.SelectVal">
+        SELECT id, name
+        FROM customer
+        where status = '1'
+    </select>
+
+    <select id="getWorkshopList" resultType="com.stock.domain.base.SelectVal">
+        SELECT id, name
+        FROM workshop
+        where status = '1'
+    </select>
+
+    <select id="getWorkshopListByCustomerId" parameterType="int"
+            resultType="com.stock.domain.base.SelectVal">
+        SELECT id, name
+        FROM workshop
+        WHERE status = '1'
+        AND customer_id = #{_parameter, jdbcType=INTEGER}
+    </select>
+
+
+</mapper>

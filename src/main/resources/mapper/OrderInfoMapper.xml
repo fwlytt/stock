@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stock.dao.OrderInfoMapper">
+    <resultMap id="BaseResultMap" type="com.stock.domain.OrderInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="customer_id" jdbcType="INTEGER" property="customerId"/>
+        <result column="workshop_id" jdbcType="INTEGER" property="workshopId"/>
+        <result column="stock_id" jdbcType="INTEGER" property="stockId"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="num" jdbcType="REAL" property="num"/>
+        <result column="price" jdbcType="REAL" property="price"/>
+        <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
+        <result column="order_date" jdbcType="DATE" property="orderDate"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+
+    <select id="queryList" parameterType="map"
+            resultType="com.stock.domain.val.OrderInfoVal">
+        SELECT o.id, o.customer_id customerId, c.name customerName,
+            o.workshop_id workshopId, w.name workshopName, o.stock_id stockId,
+            s.name stockName, o.type, o.num, o.price,
+            IF(o.type='退货', SUM(o.num*o.price*-1),SUM(o.num*o.price)) totalPrice,
+            o.remarks, o.order_date orderDate, o.create_time createTime, o.status
+        FROM order_info o
+        LEFT JOIN stock s ON o.stock_id = s.id
+        LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN workshop w ON o.workshop_id = w.id
+        <where>
+            o.status = '1'
+            <if test="type!=null and type!='' ">
+                AND o.type = #{type, jdbcType=VARCHAR}
+            </if>
+            <if test="customerId!=null and customerId!='' ">
+                AND o.customer_id = #{customerId, jdbcType=INTEGER}
+            </if>
+            <if test="orderDate!=null and orderDate!='' ">
+                AND o.order_date = #{orderDate, jdbcType=VARCHAR}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                AND o.order_date >= #{startTime, jdbcType=VARCHAR}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                AND o.order_date &lt;= #{endTime, jdbcType=VARCHAR}
+            </if>
+            <if test="key!=null and key!='' ">
+                AND (
+                    s.name LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+                    OR
+                    c.name LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+                    OR
+                    w.name LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+                )
+            </if>
+            <if test="workshopId!=null and workshopId!=''">
+                AND w.workshop_id = #{workshopId, jdbcType=INTEGER}
+            </if>
+            <if test="queryType!=null and workshopId == null">
+                AND o.workshop_id IS NULL
+            </if>
+        </where>
+        GROUP BY o.id
+    </select>
+
+    <update id="update" parameterType="com.stock.domain.OrderInfo">
+        UPDATE order_info
+        <set>
+            <if test="orderDate != null ">
+                order_date = #{orderDate, jdbcType=DATE},
+            </if>
+            <if test="type != null and type != '' ">
+                type = #{type, jdbcType=VARCHAR},
+            </if>
+            <if test="num != null and num != '' ">
+                num = #{num, jdbcType=FLOAT},
+            </if>
+            <if test="price != null and price != '' ">
+                price = #{price, jdbcType=FLOAT},
+            </if>
+            <if test="status != null and status != '' ">
+                status = #{status, jdbcType=VARCHAR},
+            </if>
+            <if test="customerId != null and customerId != '' ">
+                customer_id = #{customerId, jdbcType=VARCHAR},
+            </if>
+            <if test="workshopId != null and workshopId != '' ">
+                workshop_id = #{workshopId, jdbcType=VARCHAR},
+            </if>
+            <if test="stockId != null and stockId != '' ">
+                stock_id = #{stockId, jdbcType=VARCHAR},
+            </if>
+            remarks = #{remarks, jdbcType=VARCHAR}
+        </set>
+        WHERE id = #{id, jdbcType=INTEGER}
+    </update>
+
+    <select id="queryBillList"  parameterType="map"
+            resultType="com.stock.domain.val.OrderInfoVal">
+        SELECT o.order_date orderDate,
+        IF(o.type='退货', SUM(o.num*o.price*-1),SUM(o.num*o.price)) totalPrice,
+        c.name customerName, o.type, o.customer_id customerId,
+        w.name workshopName, o.workshop_id workshopId
+        FROM order_info o
+        LEFT JOIN customer c ON o.customer_id = c.id
+        LEFT JOIN workshop w ON o.workshop_id = w.id
+        <where>
+            o.status = '1'
+            <if test="customerId!=null and customerId!='' ">
+                AND o.customer_id = #{customerId, jdbcType=INTEGER}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                AND o.order_date >= #{startTime, jdbcType=VARCHAR}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                AND o.order_date &lt;= #{endTime, jdbcType=VARCHAR}
+            </if>
+            <if test="key!=null and key!='' ">
+                AND c.name LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+            </if>
+            <if test='queryType != null and queryType == "1"'>
+                AND o.workshop_id IS NULL
+            </if>
+            <if test='queryType != null and queryType == "2"'>
+                AND o.workshop_id IS NOT NULL
+            </if>
+        </where>
+        GROUP BY o.order_date, o.customer_id, o.type
+        <if test='queryType != null and queryType != "1"'>
+            ,o.workshop_id
+        </if>
+    </select>
+</mapper>

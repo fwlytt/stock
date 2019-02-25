@@ -1,0 +1,138 @@
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header"><h2 style="float: left">账单</h2>
+
+                            <div style="float: right">
+                                <div class="layui-inline">
+                                    <input class="layui-input" style="height: 30px; width: 80px"
+                                           id="s_key" autocomplete="off" placeholder="客户名">
+                                </div>
+                                <div class="layui-inline">
+                                        <input type="text" class="layui-input" placeholder="日期" name ="time1"
+                                            id="time1" style="width: 80px; height: 30px; ">
+                                </div>
+                                <button class="layui-btn layui-btn-sm" data-type="reload" id="s_reload">
+                                    <i class="layui-icon">&#xe615;</i>
+                                </button>
+                                <div class="layui-inline">
+                                    <button class="layui-btn layui-btn-sm" style="float: right;"
+                                        onclick="openModel()">
+                                        <i class="layui-icon">&#xe654;</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card-body">
+                            <table id="orderInfoList" lay-filter="orderInfoList"></table>
+                            <div id="laypage"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail" href="#/orderInfo/info_billList">
+        <i class="layui-icon">&#xe702;</i>详情
+    </a>
+</script>
+
+<script th:inline="none">
+    layui.config({
+        base: '/src/js/'
+    }).use(['jquery', 'layer', 'table','laydate'], function () {
+        var $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table,
+            laydate = layui.laydate;
+
+        //年月选择器
+        laydate.render({
+            elem: '#time1'
+            ,type: 'month'
+        });
+
+        //年月选择器
+        lay('.test-item').each(function() {
+            laydate.render({
+                elem: this
+                , type: 'date'
+            });
+        });
+
+        //列表实例
+        table.render({
+            elem: '#orderInfoList',
+            toolbar: true,
+            method: 'post',
+            limit: 20,
+            height: 'full-160',
+            url: '../../orderInfo/getBillList', //数据接口
+            contentType: 'application/json',
+            page: true, //开启分页
+            id: "orderInfoList2",
+            autoSort: false, //禁用前端排序
+            cellMinWidth: 120,
+            totalRow:true,
+            cols: [
+                [ //表头
+                    {field: 'orderDate',  title: '日期', sort:true}
+                    ,{field: 'type',  title: '类型', sort:true}
+                    ,{field: 'customerName',  title: '客户'}
+                    ,{field: 'totalPrice',  title: '总额', sort:true, totalRow:true}
+                    ,{title:'操作', toolbar: '#barDemo', width:85}
+                ]
+            ]
+        });
+
+        //搜索
+        var active = {
+            reload: function(){
+                table.reload('orderInfoList2', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        key: $("#s_key").val(),
+                        time: $("#time1").val()
+                    }
+                });
+            }
+        };
+
+        $('#s_reload').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+
+        });
+
+        //监听排序事件
+        table.on('sort(orderInfoList)', function(obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            table.reload('orderInfoList2', {
+                initSort: obj //记录初始排序，如果不设的话，将无法标记表头的排序状态。
+                , where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    field: obj.field //排序字段
+                    , order: obj.type //排序方式
+                }
+            });
+        });
+
+        //监听工具条(按钮)
+        table.on('tool(orderInfoList)', function(obj){
+            if(obj.event === 'detail'){
+                fieldParam['customerId'] = obj.data.customerId;
+                fieldParam['type'] = obj.data.type;
+                fieldParam['orderDate'] = obj.data.orderDate;
+            }
+            //禁用行点击事件
+            // obj.preventDefault();
+        });
+    });
+
+</script>

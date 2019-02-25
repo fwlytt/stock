@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stock.dao.StockMapper">
+    <resultMap id="BaseResultMap" type="com.stock.domain.Stock">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="num" jdbcType="INTEGER" property="num"/>
+        <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
+        <result column="produce_day" jdbcType="INTEGER" property="produceDay"/>
+        <result column="now_day" jdbcType="INTEGER" property="nowDay"/>
+        <result column="produce_num" jdbcType="INTEGER" property="produceNum"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+
+    <sql id="BaseColumnList">
+        id, name, type, num, remarks, produce_day, now_day, produce_num, create_time, status
+    </sql>
+
+    <select id="queryList" parameterType="string" resultMap="BaseResultMap">
+        SELECT
+        <include refid="BaseColumnList"/>
+        FROM stock
+        <where>
+            1 = 1
+            <if test="_parameter!= null and _parameter !=''">
+                AND (
+                name LIKE CONCAT ('%',#{_parameter,jdbcType=VARCHAR},'%')
+                OR type = #{_parameter,jdbcType=VARCHAR}
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="checkName" parameterType="com.stock.domain.Stock" resultType="int">
+        SELECT COUNT(*)
+        FROM stock
+        <where>
+            name = #{name, jdbcType=VARCHAR}
+            <if test="id != null and id != ''">
+                AND id &lt;> #{id, jdbcType=INTEGER}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryProduce" resultType="com.stock.domain.Stock">
+        SELECT id, num, produce_day produceDay,  now_day nowDay, produce_num produceNum
+        FROM stock
+        <where>
+            now_day + 1 > produce_day
+            AND produce_num > 0
+        </where>
+    </select>
+
+    <update id="updateNowDay">
+        UPDATE stock
+        <set>
+            now_day = now_day + 1
+        </set>
+        <where>
+            produce_day >= now_day + 1
+        </where>
+    </update>
+</mapper>

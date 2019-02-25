@@ -1,0 +1,378 @@
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-row layui-col-space15">
+                <!--<div class="layui-col-md3">-->
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <!--<div class="layui-card-header">-->
+                        <!--</div>-->
+                        <div class="layui-tab layui-tab-brief" lay-filter="stockTab">
+                            <ul class="layui-tab-title">
+                                <li class="layui-this">账单</li>
+                                <li>加工坊</li>
+                            </ul>
+                        </div>
+                        <!--</div>-->
+                        <div class="layui-card-body">
+                            <div class="layui-form">
+                                    <div class="layui-inline">
+                                        <input type="radio" name="orderType" value="0" title="全部" checked>
+                                        <input type="radio" name="orderType" value="1" title="客户">
+                                        <input type="radio" name="orderType" value="2" title="加工坊">
+                                    </div>
+                            </div>
+                        </div>
+
+                        <table id="stockList" lay-filter="stockList"></table>
+                        <div id="laypage"></div>
+                    </div>
+
+                    <!--订单新增-->
+                    <div style="display: none; padding: 15px" id="stockInsert">
+                        <form class="layui-form layui-form-pane" lay-filter="i_orderInfo" id="i_orderInfo">
+                            <input type="hidden" id="i_stockId">
+                            <input type="hidden" id="i_customerId">
+                            <input type="hidden" id="i_workshopId">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">日期</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="orderDate" lay-verify="required"
+                                           autocomplete="off" class="layui-input test-item">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">型号</label>
+                                <div class="layui-input-block">
+                                    <select name="stock" lay-filter="i_stock" lay-verify="required" lay-search>
+                                        <option value=""></option>
+                                        <option th:each="stock:${stocks}"
+                                                th:value="${stock.id}" th:text="${stock.name}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">客户</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="customerName" class="layui-input"
+                                           readonly="readonly" style="background-color: #f1f1f1">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">加工坊</label>
+                                <div class="layui-input-block">
+                                    <select name="workshop" lay-filter="i_workshop" lay-search>
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">订单类型</label>
+                                <div class="layui-input-block">
+                                    <select name="type" lay-verify="required">
+                                        <option value=""></option>
+                                        <option value="发货" selected>发货</option>
+                                        <option value="退货">退货</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">公斤</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="num" lay-verify="decimal" autocomplete="off"
+                                           class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">单价</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="price" lay-verify="decimal" autocomplete="off"
+                                           class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">备注</label>
+                                <div class="layui-input-block">
+                                    <textarea name="remarks" class="layui-textarea"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="doInsert">保存
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            <!--</div>-->
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail" href="#/customer/info_order">
+        <i class="layui-icon">&#xe702;</i>详情
+    </a>
+</script>
+
+<script type="text/html" id="toolbarStock">
+
+    <div class="layui-inline">
+        <input type="text" class="layui-input" placeholder="日期"
+               style="font-size: 10px; height: 26px;" readonly id="time1">
+    </div>
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs" lay-event="reload"
+                data-type="reload" id="s_reload">
+            <i class="layui-icon">&#xe615;</i>
+        </button>
+    </div>
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs" lay-event="insert" style="margin: 0">
+            <i class="layui-icon" style="margin: 0">&#xe654;</i>
+        </button>
+    </div>
+</script>
+
+<script th:inline="none">
+    layui.config({
+        base: '/src/js/'
+    }).use(['jquery', 'layer', 'table', 'form','laydate', 'element'], function () {
+        var $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table,
+            form = layui.form,
+            laydate = layui.laydate,
+            element = layui.element;
+
+        var queryTime,queryType = 0, sTime, eTime;
+
+        form.render();
+
+        if (!fieldId) { //页面刷新后导致变量消失
+            window.location.href = "/home#/customer/list";
+        }
+
+        // if (fieldName) {
+        //     $(".layui-card-header").html('<h2>' + fieldName + '的加工坊</h2>');
+        // }
+
+        //年月日选择器
+        lay('.test-item').each(function() {
+            laydate.render({
+                elem: this
+                , type: 'date'
+            });
+        });
+
+        $(function () {
+            //获取该客户的加工坊
+            $.ajax({
+                type: "post",
+                url: "/orderInfo/getWorkshop",
+                contentType: "application/json",
+                data: JSON.stringify(fieldId),
+                dataType: "json",
+                cache: false,
+                async: false,
+                success: function (data) {
+                    if (data.code === '0') {
+                        for (var i = 0; i < data.data.length; i++) {
+                            var obj = data.data[i];
+                            $("select[name='workshop']").append(
+                                "<option value=" + obj.id + ">" + obj.name + "</option>"
+                            )
+                        }
+                    }
+                }
+            });
+
+            form.render('select');
+        });
+
+        //监听选项卡切换
+        element.on('tab(stockTab)', function (data) {
+            switch (data.index) {
+                case 0:
+                    location.href = "#/customer/info_bill";
+                    break;
+                case 1:
+                    location.href = "#/customer/info_workshop";
+                    break;
+            }
+        });
+
+        //列表实例
+        table.render({
+            elem: '#stockList',
+            toolbar: '#toolbarStock',
+            method: 'post',
+            where: {"map": {"customerId": fieldId, "queryType": queryType}},
+            limit: 20,
+            height: 'full-160',
+            url: '../../orderInfo/getBillList', //数据接口
+            contentType: 'application/json',
+            page: true, //开启分页
+            id: "stockList2",
+            autoSort: false, //禁用前端排序
+            cellMinWidth: 120,
+            totalRow:true,
+            cols: [
+                [ //表头
+                    {field: 'orderDate', title: '日期', sort: true}
+                    , {field: 'type', title: '类型', sort: true}
+                    , {field: 'customerName', title: '客户'}
+                    , {field: 'workshopName', title: '加工坊'}
+                    , {field: 'totalPrice', title: '总额', sort: true, totalRow:true}
+                    , {title: '操作', toolbar: '#barDemo', width: 85}
+                ]
+            ]
+        });
+
+        //头工具栏事件
+        table.on('toolbar(stockList)', function (obj) {
+            switch (obj.event) {
+                case 'insert':
+                    openModel();
+                    break;
+                case 'reload':
+                    var type = $(this).data('type');
+                    console.log("type:" + type);
+                    active[type] ? active[type].call(this) : '';
+                    renderTime1();
+                    break;
+            }
+        });
+
+        //搜索
+        var active = {
+            reload: function(){
+                queryTime = $("#time1").val();
+                var times = queryTime.split('-');
+                sTime = times[0]+'/'+times[1]+'/'+times[2]+" 00:00:00";
+                eTime = times[3]+'/'+times[4]+'/'+times[5]+" 23:59:59";
+                table.reload('stockList2', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        map:{"customerId": fieldId, "startTime": sTime, "endTime": eTime}
+                    }
+                });
+            }
+        };
+
+        //监听单选
+        form.on('radio', function (data) {
+            queryType = data.value;
+            table.reload('stockList2', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+                , where: {
+                    "map": {
+                        "customerId": fieldId,
+                        "queryType": queryType,
+                        "startTime": sTime,
+                        "endTime": eTime
+                    }
+                }
+            });
+
+            renderTime1();
+        });
+
+        //监听下拉选
+        form.on('select(i_stock)', function (data) {
+            $("#i_stockId").val(data.value);
+        });
+        form.on('select(i_workshop)', function (data) {
+            $("#i_workshopId").val(data.value);
+        });
+
+        //新增订单
+        form.on('submit(doInsert)', function (data) {
+            var dataParam = data.field;
+            dataParam["customerId"] = fieldId;
+            dataParam["stockId"] = $("#i_stockId").val();
+            dataParam["workshopId"] = $("#i_workshopId").val();
+            $.ajax({
+                type: "post",
+                url: "/orderInfo/insert",
+                contentType: "application/json",
+                data: JSON.stringify(dataParam),
+                dataType: "json",
+                cache: false,
+                success: function (data) {
+                    if (data.code === '0') {
+                        layer.msg("添加成功", {time: 1000}, function () {
+                            layer.closeAll();
+                            table.reload("stockList2");
+                        });
+                    } else {
+                        layer.msg(data.msg, {time: 1000});
+                    }
+                },
+                error: function () {
+                    layer.msg("系统错误，请联系管理员", {time: 1000})
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+        //监听工具条(按钮)
+        table.on('tool(stockList)', function(obj){
+            if(obj.event === 'detail'){
+                fieldParam['customerId'] = obj.data.customerId;
+                fieldParam['workshopId'] = obj.data.workshopId;
+                fieldParam['type'] = obj.data.type;
+                fieldParam['orderDate'] = obj.data.orderDate;
+                fieldParam['queryType'] = queryType;
+            }
+            //禁用行点击事件
+            // obj.preventDefault();
+        });
+
+        //弹窗
+        openModel = function () {
+            $("#u_id").val('');
+            $("#u_customerId").val('');
+            form.val("i_orderInfo", {
+                "stock": ''
+                , "customer": ''
+                , "num": ''
+                , "customerName": fieldName
+                , "remarks": ''
+            });
+            layer.open({
+                type: 1,
+                title: "订单新增",
+                area: '300px',
+                closeBtn: 1,
+                shade: 0,
+                moveType: 1,
+                // offset : '50px',
+                // shadeClose : false,
+                content: $('#stockInsert'),
+                cancel: function () {
+                    $("#i_id").val('');
+                    $("#i_stockId").val('');
+                    $("#i_workshopId").val('');
+                }
+            });
+        };
+
+        renderTime1 = function() {
+            laydate.render({
+                elem: '#time1'
+                ,range: true
+                ,value: queryTime
+            });
+        };
+
+        renderTime1();
+    });
+
+</script>

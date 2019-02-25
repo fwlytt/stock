@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stock.dao.WorkshopMapper">
+    <resultMap id="BaseResultMap" type="com.stock.domain.Workshop">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
+        <result column="customer_id" jdbcType="INTEGER" property="customerId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+
+    <sql id="BaseColumnList">
+        id, name, phone, remarks, customer_id, create_time, status
+    </sql>
+
+    <select id="queryList" parameterType="string" resultType="com.stock.domain.val.WorkshopVal">
+        SELECT ws.id, ws.name, ws.phone, ws.remarks, ws.customer_id customerId,
+        ws.create_time createTime, ws.status, c.name customerName
+        FROM workshop ws
+        LEFT JOIN customer c ON ws.customer_id = c.id
+        <where>
+            1 = 1
+            <if test="_parameter!= null and _parameter !=''">
+                AND (
+                ws.name LIKE CONCAT ('%',#{_parameter,jdbcType=VARCHAR},'%')
+                OR
+                c.name LIKE CONCAT ('%',#{_parameter,jdbcType=VARCHAR},'%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="checkName" parameterType="com.stock.domain.Workshop" resultType="int">
+        SELECT COUNT(*)
+        FROM workshop
+        <where>
+            name = #{name, jdbcType=VARCHAR}
+            <if test="id != null and id != ''">
+                AND id &lt;> #{id, jdbcType=INTEGER}
+            </if>
+            <if test="customerId != null and customerId != ''">
+                AND customer_id = #{customerId, jdbcType=INTEGER}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryInfoList" parameterType="int" resultMap="BaseResultMap">
+        SELECT
+        <include refid="BaseColumnList"/>
+        FROM workshop
+        <where>
+            customer_id = #{_parameter,jdbcType=INTEGER}
+        </where>
+    </select>
+</mapper>

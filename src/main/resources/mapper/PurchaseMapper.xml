@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stock.dao.PurchaseMapper">
+    <resultMap id="BaseResultMap" type="com.stock.domain.Purchase">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="purchase_name" jdbcType="VARCHAR" property="purchaseName"/>
+        <result column="channel" jdbcType="VARCHAR" property="channel"/>
+        <result column="num" jdbcType="REAL" property="num"/>
+        <result column="price" jdbcType="REAL" property="price"/>
+        <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="BaseColumnList">
+        id, purchase_name, channel, num, price, create_time
+    </sql>
+
+    <select id="queryList" parameterType="com.stock.domain.StockRecord" resultMap="BaseResultMap">
+        SELECT
+        <include refid="BaseColumnList"/>
+        FROM stock_record
+        <where>
+            1 = 1
+            <if test="stockId != null and stockId != ''">
+                AND stock_id = #{stockId, jdbcType=INTEGER}
+            </if>
+        </where>
+    </select>
+</mapper>
