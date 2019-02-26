@@ -45,14 +45,14 @@ public class PageController {
         return "pages/orderInfo/" + page;
     }
 
+    @RequestMapping(value = "pages/purchase/{page}")
+    public String pagesPurchase(@PathVariable String page, Model model){
+        return "pages/purchase/" + page;
+    }
+
     @RequestMapping(value = "pages/stock/{page}")
     public String pagesStock(@PathVariable String page){
         return "pages/stock/" + page;
-    }
-
-    @RequestMapping(value = "pages/docs/{page}")
-    public String pagesDocs(@PathVariable String page){
-        return "pages/docs/" + page;
     }
 
     @RequestMapping(value = "pages/views/{page}")

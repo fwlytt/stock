@@ -99,7 +99,7 @@
 
     <select id="queryBillList"  parameterType="map"
             resultType="com.stock.domain.val.OrderInfoVal">
-        SELECT o.order_date orderDate,
+        SELECT date_format(o.order_date,'%Y-%m') orderDate,
         IF(o.type='退货', SUM(o.num*o.price*-1),SUM(o.num*o.price)) totalPrice,
         c.name customerName, o.type, o.customer_id customerId,
         w.name workshopName, o.workshop_id workshopId
@@ -127,7 +127,7 @@
                 AND o.workshop_id IS NOT NULL
             </if>
         </where>
-        GROUP BY o.order_date, o.customer_id, o.type
+        GROUP BY orderDate, o.customer_id, o.type
         <if test='queryType != null and queryType != "1"'>
             ,o.workshop_id
         </if>

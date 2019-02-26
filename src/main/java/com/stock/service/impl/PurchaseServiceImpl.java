@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PurchaseServiceImpl extends BaseService<Purchase> implements PurchaseService {
@@ -18,7 +19,12 @@ public class PurchaseServiceImpl extends BaseService<Purchase> implements Purcha
     private PurchaseMapper mapper;
 
     @Override
-    public List<Purchase> queryList(Purchase param) {
+    public List<Purchase> queryList(Map<String, String> param) {
         return mapper.queryList(param);
+    }
+
+    @Override
+    public List<Purchase> queryBillList(Map<String, String> param) {
+        return mapper.queryBillList(param);
     }
 }

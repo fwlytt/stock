@@ -11,6 +11,8 @@
         <result column="num" jdbcType="REAL" property="num"/>
         <result column="price" jdbcType="REAL" property="price"/>
         <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="purchase_time" jdbcType="TIMESTAMP" property="purchaseTime"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
     </resultMap>
 
@@ -18,14 +20,41 @@
         id, purchase_name, channel, num, price, create_time
     </sql>
 
-    <select id="queryList" parameterType="com.stock.domain.StockRecord" resultMap="BaseResultMap">
+    <select id="queryList" parameterType="map" resultType="com.stock.domain.Purchase">
         SELECT
-        <include refid="BaseColumnList"/>
-        FROM stock_record
+          id, purchase_name purchaseName, channel, num, price, purchase_time purchaseTime, num*price totalPrice
+        FROM purchase
         <where>
-            1 = 1
-            <if test="stockId != null and stockId != ''">
-                AND stock_id = #{stockId, jdbcType=INTEGER}
+            status = '1'
+            <if test="key != null and key != ''">
+                AND (
+                    purchase_name LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+                    OR channel  LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+                )
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                AND purchase_time >= #{startTime, jdbcType=VARCHAR}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                AND purchase_time &lt;= #{endTime, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryBillList" parameterType="map" resultType="com.stock.domain.Purchase">
+        SELECT
+           channel, purchase_time purchaseTime, SUN(num*price) totalPrice
+        FROM purchase
+        <where>
+            status = '1'
+            <if test="key != null and key != ''">
+               AND purchase_name LIKE CONCAT (#{key, jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                AND purchase_time >= #{startTime, jdbcType=VARCHAR}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                AND purchase_time &lt;= #{endTime, jdbcType=VARCHAR}
             </if>
         </where>
     </select>

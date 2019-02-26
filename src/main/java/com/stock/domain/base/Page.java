@@ -19,6 +19,7 @@ public class Page {
     //排序字段
     private String field;
 
+    //排序方式
     private String order;
 
     private Map<String, String> map;

@@ -48,4 +48,13 @@ public class Utils {
         map.put("endTime", sm.format(cal.getTime()));
         return map;
     }
+
+    /**根据日期范围获取开始时间和结束时间**/
+    public static Map<String, String> getDateByRangeDate(String param) {
+        Map<String, String> map = new HashMap<>();
+        String[] strings = param.split("-");
+        map.put("startTime", strings[0]+"-"+strings[1]+"-"+strings[2]+" 00:00:00");
+        map.put("endTime", strings[3]+"-"+strings[4]+"-"+strings[5]+" 23:59:59");
+        return map;
+    }
 }
