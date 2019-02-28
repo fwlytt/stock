@@ -34,7 +34,7 @@ public class PurchaseController {
 
     @PostMapping(value = "/getList")
     public String getList(@RequestBody Page page){
-        Val<List<Purchase>> val = new Val<>();
+        Val<List<Map<String, String>>> val = new Val<>();
         if (StringUtils.isEmpty(page.getField())) {
             PageHelper.startPage(page.getPage(), page.getLimit());
         } else {
@@ -57,7 +57,7 @@ public class PurchaseController {
             param.putAll(Utils.getDateByMonth(page.getTime()));
         }
 
-        List<Purchase> list = purchaseService.queryList(param);
+        List<Map<String, String>> list = purchaseService.queryList(param);
         if (list != null && list.size() > 0) {
             PageInfo<OrderInfoVal> info = new PageInfo(list);
             val.setData(list);
@@ -83,6 +83,7 @@ public class PurchaseController {
         } else {
             Purchase purchase = purchaseService.selectByKey(param.getId());
             param.setCreateTime(purchase.getCreateTime());
+            param.setStatus(purchase.getStatus());
             purchaseService.updateAll(param);
             val.setInfo(BackCode.SUCCESS, "修改成功");
         }
@@ -124,7 +125,7 @@ public class PurchaseController {
 
     @PostMapping(value = "/getBillList")
     public String getBillList(@RequestBody Page page){
-        Val<List<Purchase>> val = new Val<>();
+        Val<List<Map<String, String>>> val = new Val<>();
         if (StringUtils.isEmpty(page.getField())) {
             PageHelper.startPage(page.getPage(), page.getLimit());
         } else {
@@ -146,7 +147,7 @@ public class PurchaseController {
             param.putAll(Utils.getDateByMonth(page.getTime()));
         }
 
-        List<Purchase> list = purchaseService.queryList(param);
+        List<Map<String, String>> list = purchaseService.queryBillList(param);
         if (list != null && list.size() > 0) {
             PageInfo<OrderInfoVal> info = new PageInfo(list);
             val.setData(list);

@@ -19,12 +19,12 @@ public class PurchaseServiceImpl extends BaseService<Purchase> implements Purcha
     private PurchaseMapper mapper;
 
     @Override
-    public List<Purchase> queryList(Map<String, String> param) {
+    public List<Map<String, String>> queryList(Map<String, String> param) {
         return mapper.queryList(param);
     }
 
     @Override
-    public List<Purchase> queryBillList(Map<String, String> param) {
+    public List<Map<String, String>> queryBillList(Map<String, String> param) {
         return mapper.queryBillList(param);
     }
 }

@@ -20,9 +20,10 @@
         id, purchase_name, channel, num, price, create_time
     </sql>
 
-    <select id="queryList" parameterType="map" resultType="com.stock.domain.Purchase">
+    <select id="queryList" parameterType="map" resultType="map">
         SELECT
-          id, purchase_name purchaseName, channel, num, price, purchase_time purchaseTime, num*price totalPrice
+          id, purchase_name purchaseName, channel, num, price, remarks,
+          date_format(purchase_time,'%Y-%m-%d') purchaseTime , num*price totalPrice
         FROM purchase
         <where>
             status = '1'
@@ -41,9 +42,9 @@
         </where>
     </select>
 
-    <select id="queryBillList" parameterType="map" resultType="com.stock.domain.Purchase">
+    <select id="queryBillList" parameterType="map" resultType="map">
         SELECT
-           channel, purchase_time purchaseTime, SUN(num*price) totalPrice
+           channel, purchase_time purchaseTime, SUM(num*price) totalPrice
         FROM purchase
         <where>
             status = '1'
@@ -57,5 +58,6 @@
                 AND purchase_time &lt;= #{endTime, jdbcType=VARCHAR}
             </if>
         </where>
+        GROUP BY purchase_time, channel
     </select>
 </mapper>

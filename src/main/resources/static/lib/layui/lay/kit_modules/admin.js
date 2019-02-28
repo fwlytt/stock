@@ -70,6 +70,9 @@ layui.define(mods, function (e) {
                     {path: "/orderInfo/list", component: "pages/orderInfo/list.html", name: "订单列表"},
                     {path: "/orderInfo/billList", component: "pages/orderInfo/billList.html", name: "账单列表"},
                     {path: "/orderInfo/info_billList", component: "pages/orderInfo/info_billList.html", name: "账单详情"},
+
+                    {path: "/purchase/list", component: "pages/purchase/list.html", name: "进货列表"},
+                    {path: "/purchase/billList", component: "pages/purchase/billList.html", name: "账单列表"},
                 ]
             };
             return "TABS" === e.loadType && (a.onChanged = function () {

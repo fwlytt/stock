@@ -38,10 +38,8 @@ public class Purchase {
 
     private String status;
 
-    private Float totalPrice;
-
-    @JSONField(format="yyyy-MM-dd hh:mm")
-    @Column(name = "create_time")
+    @JSONField(format="yyyy-MM-dd")
+    @Column(name = "purchase_time")
     private Date purchaseTime;
 
     private Date createTime;
@@ -158,14 +156,6 @@ public class Purchase {
         this.createTime = createTime;
     }
 
-    public Float getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Float totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -181,4 +171,5 @@ public class Purchase {
     public void setPurchaseTime(Date purchaseTime) {
         this.purchaseTime = purchaseTime;
     }
+
 }
