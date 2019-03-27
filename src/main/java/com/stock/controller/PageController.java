@@ -55,6 +55,11 @@ public class PageController {
         return "pages/stock/" + page;
     }
 
+    @RequestMapping(value = "pages/staffInfo/{page}")
+    public String pagesStaffInfo(@PathVariable String page){
+        return "pages/staffInfo/" + page;
+    }
+
     @RequestMapping(value = "pages/views/{page}")
     public String pagesViews(@PathVariable String page){
         return "pages/views/" + page;

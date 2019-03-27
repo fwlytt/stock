@@ -1,0 +1,279 @@
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-row layui-col-space15">
+                <!--<div class="layui-col-md3">-->
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">
+                            <h2 id="staffTitle" style="float: left"></h2>
+                            <div style="float: right">
+                                <div class="layui-inline">
+                                    <input type="text" class="layui-input" placeholder="年份" name ="time1"
+                                           id="time1" style="width: 80px; height: 30px; ">
+                                </div>
+                                <button class="layui-btn layui-btn-sm" data-type="reload" id="s_reload">
+                                    <i class="layui-icon">&#xe615;</i>
+                                </button>
+                                <div class="layui-inline">
+                                    <button class="layui-btn layui-btn-sm" style="float: right;"
+                                            onclick="openModel('新增', null)">
+                                        <i class="layui-icon">&#xe654;</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card-body">
+                            <table id="stockList" lay-filter="stockList"></table>
+                            <div id="laypage"></div>
+
+                            <!--事件修改-->
+                            <div style="display: none; padding: 15px" id="stockUpdate">
+                                <form class="layui-form layui-form-pane" lay-filter="u_stock" id="u_stock">
+                                    <input type="hidden" id="u_id">
+                                    <div class="layui-form-item">
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">内容</label>
+                                            <div class="layui-input-block">
+                                                <select name="type">
+                                                    <option value=""></option>
+                                                    <option value="开工时间">开工时间</option>
+                                                    <option value="工资发放">工资发放</option>
+                                                    <option value="休息时间">休息时间</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">日期</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="eventDate" lay-verify="required" autocomplete="off"  class="layui-input">
+                                            </div>
+                                        </div>
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">天数或工资</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="eventNum" lay-verify="num" autocomplete="off"  class="layui-input">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="doUpdate">保存</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--</div>-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<script type="text/html" id="barDemo">-->
+    <!--<a class="layui-btn layui-btn-xs" lay-event="delete">-->
+        <!--<i class="layui-icon">&#xe702;</i>删除-->
+    <!--</a>-->
+<!--</script>-->
+
+
+<script th:inline="none">
+    layui.config({
+        base: '/src/js/'
+    }).use(['jquery', 'layer', 'table','form','laydate'], function () {
+        var $ = layui.jquery,
+            table = layui.table,
+            form = layui.form,
+            laydate = layui.laydate;
+
+        //年月选择器
+        laydate.render({
+            elem: '#time1'
+            ,type: 'year'
+        });
+
+        if (!fieldId) { //页面刷新后导致变量消失
+            window.location.href="/home#/staffInfo/list";
+        }
+
+        if (fieldName) {
+            $("#staffTitle").html(fieldName + '的详情');
+        }
+        //列表实例
+        table.render({
+            method: 'post',
+            // done: function (res) {
+            //     console.log(res)
+            // },
+            where:{"id":fieldId},
+            limit: 20,
+            elem: '#stockList',
+            height: 'full-160',
+            url: '../../staffInfo/getEventList', //数据接口
+            contentType: 'application/json',
+            page: true, //开启分页
+            id: "stockList2",
+            autoSort: false, //禁用前端排序
+            cellMinWidth: 120,
+            cols: [
+                [ //表头
+                    {field: 'eventDate',  title: '日期'}
+                    ,{field: 'type',  title: '内容', sort:true}
+                    ,{field: 'eventNum',  title: '天数或工资'}
+                    // ,{title:'操作', toolbar: '#barDemo', width:85}
+                ]
+            ]
+        });
+
+        //搜索
+        var active = {
+            reload: function(){
+                table.reload('stockList2', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        id: fieldId,
+                        time: $("#time1").val()
+                    }
+                });
+            }
+        };
+
+        $('#s_reload').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+
+        });
+
+        //监听排序事件
+        table.on('sort(stockList)', function(obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            //尽管我们的 table 自带排序功能，但并没有请求服务端。
+            //有些时候，你可能需要根据当前排序的字段，重新向服务端发送请求，从而实现服务端排序，如：
+            table.reload('stockList2', {
+                initSort: obj //记录初始排序，如果不设的话，将无法标记表头的排序状态。
+                , where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    field: obj.field //排序字段
+                    ,order: obj.type //排序方式
+                }
+            });
+        });
+
+        //监听行单击事件（单击事件为：rowDouble）
+        table.on('row(stockList)', function(obj){
+            var data = obj.data;
+            $("#u_id").val(data.id);
+
+            // 弹出框赋值
+            form.val("u_stock",{
+                "type":data.type
+                ,"eventDate":data.eventDate
+                ,"eventNum":data.eventNum
+            });
+
+            // 跳出弹出框
+            openModel('修改', obj);
+            //标注选中样式
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+        });
+
+        //表单验证
+        form.verify({
+            num:function(value) {
+                //框架中的数字验证需要必填，我只需要选填
+                if (value) {
+                    var regPos = /^-?\d+$/;
+                    if (!regPos.test(value)) {
+                        return '只能填写整数';
+                    }
+                }
+            }
+        });
+
+        //修改库存或新增库存(根据u_id是否有值进行判断)
+        form.on('submit(doUpdate)', function(data){
+            console.log("修改");
+            var u_id = $("#u_id").val();
+            var dataParam = data.field;
+            if (u_id) { //修改库存
+                dataParam["id"] = u_id;
+                $.ajax({
+                    type: "post",
+                    url: "/staffInfo/updateEvent",
+                    contentType: "application/json",
+                    data: JSON.stringify(dataParam),
+                    dataType: "json",
+                    cache: false,
+                    success: function (data) {
+                        if (data.code === '0') {
+                            layer.msg("修改成功", {time: 1000},function () {
+                                $("#u_id").val('');
+                                layer.closeAll();
+                                table.reload("stockList2");
+                            });
+                        } else {
+                            layer.msg(data.msg, {time: 1000});
+                        }
+                    },
+                    error: function () {
+                        layer.msg("系统错误，请联系管理员", {time: 1000})
+                    }
+                });
+            } else { //新增库存
+                dataParam["staffId"] = fieldId;
+                $.ajax({
+                    type: "post",
+                    url: "/staffInfo/insertEvent",
+                    contentType: "application/json",
+                    data: JSON.stringify(dataParam),
+                    dataType: "json",
+                    cache: false,
+                    success: function (data) {
+                        if (data.code === '0') {
+                            layer.msg("添加成功", {time: 1000},function () {
+                                layer.closeAll();
+                                table.reload("stockList2");
+                            });
+                        } else {
+                            layer.msg(data.msg, {time: 1000});
+                        }
+                    },
+                    error: function () {
+                        layer.msg("系统错误，请联系管理员", {time: 1000})
+                    }
+                });
+            }
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+
+        //弹窗
+        openModel = function (title, obj) {
+            if (!obj) {
+                form.val("u_stock", {
+                    "type": ''
+                    , "eventDate": ''
+                    , "eventNum": ''
+                });
+            }
+
+            layer.open({
+                type: 1,
+                title: title,
+                area: '300px',
+                closeBtn: 1,
+                shade: 0,
+                moveType: 1,
+                // offset : '50px',
+                // shadeClose : false,
+                content: $('#stockUpdate'),
+                cancel: function () {
+                    $("#u_id").val('');
+                    if (obj) {
+                        obj.tr.removeClass('layui-table-click');
+                    }
+                }
+            });
+        }
+    });
+</script>

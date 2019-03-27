@@ -73,6 +73,9 @@ layui.define(mods, function (e) {
 
                     {path: "/purchase/list", component: "pages/purchase/list.html", name: "进货列表"},
                     {path: "/purchase/billList", component: "pages/purchase/billList.html", name: "账单列表"},
+
+                    {path: "/staffInfo/list", component: "pages/staffInfo/list.html", name: "员工列表"},
+                    {path: "/staffInfo/detailList", component: "pages/staffInfo/detailList.html", name: "员工详情"},
                 ]
             };
             return "TABS" === e.loadType && (a.onChanged = function () {
