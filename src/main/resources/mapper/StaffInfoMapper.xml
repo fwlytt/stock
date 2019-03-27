@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stock.dao.StaffInfoMapper">
+    <resultMap id="BaseResultMap" type="com.stock.domain.StaffInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+
+    <select id="queryList" resultType="com.stock.domain.val.StaffInfoVal" parameterType="string">
+        SELECT si.id, si.name, se1.event_date startDate, CONCAT(se2.event_date,'发放工资：',se2.event_num,'元') wages, se3.restDays
+        FROM staff_info si
+        LEFT JOIN (SELECT staff_id, event_date FROM staff_event WHERE type='开工时间' GROUP BY staff_id  ORDER BY event_date) se1 ON  se1.staff_id = si.id
+        LEFT JOIN (SELECT staff_id, event_date, event_num FROM staff_event WHERE type='工资发放' GROUP BY staff_id  ORDER BY event_date) se2 ON  se2.staff_id = si.id
+        LEFT JOIN (SELECT staff_id, SUM(event_num) restDays  FROM staff_event WHERE type='休息时间' AND YEAR(create_time) = YEAR(now()) GROUP BY staff_id  ) se3 ON  se2.staff_id = si.id
+        <where>
+            si.status = '1'
+            <if test="_parameter!= null and _parameter !=''">
+              AND name LIKE CONCAT ('%',#{_parameter,jdbcType=VARCHAR},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="queryEventList" resultType="com.stock.domain.StaffEvent" parameterType="map">
+        SELECT id, event_date eventDate, event_num eventNum, type
+        FROM staff_event
+        <where>
+            staff_id = #{staffId,jdbcType=INTEGER}
+            <if test="eventYear!=null and eventYear!='' ">
+                AND YEAR(create_time) = #{eventYear, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+</mapper>
